@@ -6,7 +6,7 @@ import { InventoryItem, CreateInventoryItemDto, UpdateInventoryItemDto } from '.
 describe('InventoryService', () => {
   let service: InventoryService;
   let httpMock: HttpTestingController;
-  const apiUrl = 'http://localhost:5000/api/inventory';
+  const apiUrl = 'http://localhost:5268/api/inventory';
 
   const mockInventoryItems: InventoryItem[] = [
     {

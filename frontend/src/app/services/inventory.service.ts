@@ -7,7 +7,7 @@ import { InventoryItem, CreateInventoryItemDto, UpdateInventoryItemDto } from '.
   providedIn: 'root'
 })
 export class InventoryService {
-  private readonly apiUrl = 'http://localhost:5000/api/inventory';
+  private readonly apiUrl = 'http://localhost:5268/api/inventory';
   private readonly http = inject(HttpClient);
 
   // Signals for reactive state management

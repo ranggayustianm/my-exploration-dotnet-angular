@@ -27,5 +27,64 @@ public class InventoryDbContext : DbContext
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.UpdatedAt).IsRequired();
         });
+
+        // Seed initial data
+        modelBuilder.Entity<InventoryItem>().HasData(
+            new InventoryItem
+            {
+                Id = 1,
+                Name = "Laptop",
+                Description = "High-performance laptop for development work",
+                Quantity = 5,
+                Category = "Electronics",
+                Price = 999.99m,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new InventoryItem
+            {
+                Id = 2,
+                Name = "Office Chair",
+                Description = "Ergonomic office chair with lumbar support",
+                Quantity = 10,
+                Category = "Furniture",
+                Price = 249.99m,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new InventoryItem
+            {
+                Id = 3,
+                Name = "Printer",
+                Description = "Wireless color printer with scanner",
+                Quantity = 7,
+                Category = "Electronics",
+                Price = 199.99m,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new InventoryItem
+            {
+                Id = 4,
+                Name = "Notebooks",
+                Description = "Pack of 5 spiral-bound notebooks",
+                Quantity = 100,
+                Category = "Office Supplies",
+                Price = 4.99m,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new InventoryItem
+            {
+                Id = 5,
+                Name = "Pens",
+                Description = "Box of 50 ballpoint pens",
+                Quantity = 200,
+                Category = "Office Supplies",
+                Price = 2.99m,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            }
+        );
     }
 }
