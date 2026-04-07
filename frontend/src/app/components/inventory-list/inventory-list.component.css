@@ -1,0 +1,119 @@
+/* Component-specific styles */
+.container {
+  max-width: 1200px;
+}
+
+/* Custom scrollbar for table */
+table {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #edf2f7;
+}
+
+table::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+table::-webkit-scrollbar-track {
+  background: #edf2f7;
+  border-radius: 4px;
+}
+
+table::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+table::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Form input focus states */
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+}
+
+/* Button hover effects */
+button {
+  transition: all 0.15s ease-in-out;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Modal animation */
+.fixed {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fixed .relative {
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Loading spinner animation */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Table row hover effect */
+tbody tr {
+  transition: background-color 0.15s ease-in-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .text-3xl {
+    font-size: 1.5rem;
+  }
+  
+  /* Stack table on mobile */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .fixed .relative {
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
