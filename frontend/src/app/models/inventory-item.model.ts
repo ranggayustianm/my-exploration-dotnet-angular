@@ -9,18 +9,6 @@ export interface InventoryItem {
   updatedAt: Date;
 }
 
-export interface CreateInventoryItemDto {
-  name: string;
-  description: string;
-  quantity: number;
-  category: string;
-  price: number;
-}
-
-export interface UpdateInventoryItemDto {
-  name: string;
-  description: string;
-  quantity: number;
-  category: string;
-  price: number;
-}
+// Omit server-managed fields
+export type CreateInventoryItemDto = Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>;
+export type UpdateInventoryItemDto = Partial<CreateInventoryItemDto>;
