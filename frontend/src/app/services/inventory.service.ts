@@ -1,7 +1,8 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { InventoryItem, CreateInventoryItemDto, UpdateInventoryItemDto } from '../models/inventory-item.model';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +10,22 @@ import { InventoryItem, CreateInventoryItemDto, UpdateInventoryItemDto } from '.
 export class InventoryService {
   private readonly apiUrl = 'http://localhost:5268/api/inventory';
   private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+
+  // DRY: Helper method to get auth headers
+  private getAuthHeaders(): HttpHeaders {
+    const user = this.authService.currentUser();
+    const token = user?.token;
+    
+    if (!token) {
+      throw new Error('No authentication token available');
+    }
+    
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+  }
 
   // Signals for reactive state management
   private readonly inventoryItems = signal<InventoryItem[]>([]);
@@ -58,7 +75,7 @@ export class InventoryService {
   getInventoryItems(): Observable<InventoryItem[]> {
     this.startRequest();
 
-    return this.http.get<InventoryItem[]>(this.apiUrl).pipe(
+    return this.http.get<InventoryItem[]>(this.apiUrl, { headers: this.getAuthHeaders() }).pipe(
       tap(items => this.setItems(items)),
       catchError(() => this.handleError('Failed to fetch inventory items'))
     );
@@ -68,7 +85,7 @@ export class InventoryService {
   getInventoryItemById(id: number): Observable<InventoryItem> {
     this.startRequest();
 
-    return this.http.get<InventoryItem>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.get<InventoryItem>(`${this.apiUrl}/${id}`, { headers: this.getAuthHeaders() }).pipe(
       tap(item => this.setItems([item])),
       catchError(() => this.handleError('Failed to fetch inventory item'))
     );
@@ -78,7 +95,7 @@ export class InventoryService {
   createInventoryItem(item: CreateInventoryItemDto): Observable<InventoryItem> {
     this.startRequest();
 
-    return this.http.post<InventoryItem>(this.apiUrl, item).pipe(
+    return this.http.post<InventoryItem>(this.apiUrl, item, { headers: this.getAuthHeaders() }).pipe(
       tap(newItem => this.addItem(newItem)),
       catchError(() => this.handleError('Failed to create inventory item'))
     );
@@ -88,7 +105,7 @@ export class InventoryService {
   updateInventoryItem(id: number, item: UpdateInventoryItemDto): Observable<InventoryItem> {
     this.startRequest();
 
-    return this.http.put<InventoryItem>(`${this.apiUrl}/${id}`, item).pipe(
+    return this.http.put<InventoryItem>(`${this.apiUrl}/${id}`, item, { headers: this.getAuthHeaders() }).pipe(
       tap(updatedItem => this.updateItem(updatedItem)),
       catchError(() => this.handleError('Failed to update inventory item'))
     );
@@ -98,7 +115,7 @@ export class InventoryService {
   deleteInventoryItem(id: number): Observable<void> {
     this.startRequest();
 
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getAuthHeaders() }).pipe(
       tap(() => this.removeItem(id)),
       catchError(() => this.handleError('Failed to delete inventory item'))
     );

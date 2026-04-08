@@ -1,0 +1,146 @@
+using System.Security.Cryptography;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using InventoryManagement.Api.Data;
+using InventoryManagement.Api.Models;
+
+namespace InventoryManagement.Api.Services;
+
+public class AuthService : IAuthService
+{
+    private readonly InventoryDbContext _context;
+    private readonly IConfiguration _config;
+    private readonly TimeSpan _tokenLifetime = TimeSpan.FromHours(24);
+
+    public AuthService(InventoryDbContext context, IConfiguration config)
+    {
+        _context = context;
+        _config = config;
+    }
+
+    public async Task<User?> RegisterAsync(RegisterUserDto dto)
+    {
+        // Check if username or email already exists
+        if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
+            throw new InvalidOperationException("Username already exists");
+        
+        if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+            throw new InvalidOperationException("Email already exists");
+
+        CreatePasswordHash(dto.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+        var user = new User
+        {
+            Username = dto.Username,
+            Email = dto.Email,
+            PasswordHash = passwordHash,
+            PasswordSalt = passwordSalt,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        return user;
+    }
+
+    public async Task<AuthResponseDto?> LoginAsync(LoginUserDto dto)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Username == dto.UsernameOrEmail || u.Email == dto.UsernameOrEmail);
+
+        if (user == null)
+            return null;
+
+        if (!VerifyPasswordHash(dto.Password, user.PasswordHash, user.PasswordSalt))
+            return null;
+
+        string token = CreateToken(user);
+
+        return new AuthResponseDto(
+            token,
+            user.Username,
+            user.Email,
+            DateTime.UtcNow.Add(_tokenLifetime)
+        );
+    }
+
+    public async Task<User?> GetUserByIdAsync(int id)
+    {
+        return await _context.Users.FindAsync(id);
+    }
+
+    public bool ValidateToken(string token, out int userId)
+    {
+        userId = 0;
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong!");
+            
+            tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ClockSkew = TimeSpan.Zero
+            }, out SecurityToken validatedToken);
+
+            var jwtToken = (JwtSecurityToken)validatedToken;
+            var userIdClaim = jwtToken.Claims.First(x => x.Type == "UserId").Value;
+            userId = int.Parse(userIdClaim);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+    {
+        using var hmac = new HMACSHA512();
+        passwordSalt = hmac.Key;
+        passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+    }
+
+    private bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
+    {
+        using var hmac = new HMACSHA512(storedSalt);
+        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return computedHash.SequenceEqual(storedHash);
+    }
+
+    private string CreateToken(User user)
+    {
+        var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong!");
+        
+        var claims = new List<Claim>
+        {
+            new Claim("UserId", user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Email, user.Email)
+        };
+
+        var credentials = new SigningCredentials(
+            new SymmetricSecurityKey(key),
+            SecurityAlgorithms.HmacSha512Signature
+        );
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.Add(_tokenLifetime),
+            SigningCredentials = credentials
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
+    }
+}

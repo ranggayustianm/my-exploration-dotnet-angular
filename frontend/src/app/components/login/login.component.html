@@ -1,0 +1,154 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+  <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">
+      {{ isLoginMode ? 'Login' : 'Register' }}
+    </h2>
+
+    <!-- Error Message -->
+    @if (error()) {
+      <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded flex justify-between items-center">
+        <span>{{ error() }}</span>
+        <button (click)="clearError()" class="text-red-700 hover:text-red-900 font-bold">&times;</button>
+      </div>
+    }
+
+    <!-- Login Form -->
+    @if (isLoginMode) {
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+        <div class="mb-4">
+          <label for="usernameOrEmail" class="block text-sm font-medium text-gray-700 mb-1">
+            Username or Email
+          </label>
+          <input
+            type="text"
+            id="usernameOrEmail"
+            formControlName="usernameOrEmail"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            [class.border-red-500]="loginForm.get('usernameOrEmail')?.invalid && loginForm.get('usernameOrEmail')?.touched"
+          />
+          @if (loginForm.get('usernameOrEmail')?.invalid && loginForm.get('usernameOrEmail')?.touched) {
+            <p class="text-red-500 text-xs mt-1">Username or email is required</p>
+          }
+        </div>
+
+        <div class="mb-6">
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+            Password
+          </label>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            [class.border-red-500]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+          />
+          @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+            <p class="text-red-500 text-xs mt-1">Password is required (min 6 characters)</p>
+          }
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="loading() || loginForm.invalid"
+          class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-200"
+        >
+          @if (loading()) {
+            <span class="flex items-center justify-center">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Logging in...
+            </span>
+          } @else {
+            Login
+          }
+        </button>
+      </form>
+    }
+
+    <!-- Register Form -->
+    @if (!isLoginMode) {
+      <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+        <div class="mb-4">
+          <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
+            Username
+          </label>
+          <input
+            type="text"
+            id="username"
+            formControlName="username"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            [class.border-red-500]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched"
+          />
+          @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
+            <p class="text-red-500 text-xs mt-1">Username is required (min 3 characters)</p>
+          }
+        </div>
+
+        <div class="mb-4">
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            [class.border-red-500]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+          />
+          @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+            <p class="text-red-500 text-xs mt-1">Valid email is required</p>
+          }
+        </div>
+
+        <div class="mb-6">
+          <label for="regPassword" class="block text-sm font-medium text-gray-700 mb-1">
+            Password
+          </label>
+          <input
+            type="password"
+            id="regPassword"
+            formControlName="password"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            [class.border-red-500]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+          />
+          @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+            <p class="text-red-500 text-xs mt-1">Password is required (min 6 characters)</p>
+          }
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="loading() || registerForm.invalid"
+          class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-200"
+        >
+          @if (loading()) {
+            <span class="flex items-center justify-center">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Registering...
+            </span>
+          } @else {
+            Register
+          }
+        </button>
+      </form>
+    }
+
+    <!-- Toggle Mode -->
+    <div class="mt-6 text-center">
+      <p class="text-sm text-gray-600">
+        {{ isLoginMode ? "Don't have an account?" : "Already have an account?" }}
+        <button
+          (click)="toggleMode()"
+          class="text-blue-600 hover:text-blue-800 font-medium focus:outline-none"
+        >
+          {{ isLoginMode ? 'Sign up' : 'Login' }}
+        </button>
+      </p>
+    </div>
+  </div>
+</div>
