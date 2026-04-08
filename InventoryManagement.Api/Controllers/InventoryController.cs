@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using InventoryManagement.Api.Models;
 using InventoryManagement.Api.Services;
@@ -6,6 +7,7 @@ namespace InventoryManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class InventoryController : ControllerBase
 {
     private readonly IInventoryService _service;

@@ -1,8 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { InventoryService } from '../../services/inventory.service';
 import { InventoryItem } from '../../models/inventory-item.model';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-inventory-list',
@@ -13,7 +15,9 @@ import { InventoryItem } from '../../models/inventory-item.model';
 })
 export class InventoryListComponent implements OnInit {
   private inventoryService = inject(InventoryService);
+  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
+  private router = inject(Router);
 
   // DRY: Use service's computed signals directly instead of duplicating state
   items = this.inventoryService.items;
@@ -105,6 +109,11 @@ export class InventoryListComponent implements OnInit {
       style: 'currency',
       currency: 'USD'
     }).format(price);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
   clearError(): void {
