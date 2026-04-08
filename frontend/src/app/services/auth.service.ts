@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { RegisterUserDto, LoginUserDto, AuthResponseDto, CurrentUser } from '../models/auth.model';
+import { ToastService } from './toast.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +10,7 @@ import { RegisterUserDto, LoginUserDto, AuthResponseDto, CurrentUser } from '../
 export class AuthService {
   private readonly apiUrl = 'http://localhost:5268/api/auth';
   private readonly http = inject(HttpClient);
+  private readonly toast = inject(ToastService);
   private readonly storageKey = 'currentUser';
 
   // Signals for reactive state management
@@ -64,6 +66,7 @@ export class AuthService {
         this.currentUserSignal.set(user);
         this.saveUserToStorage(user);
         this.loading.set(false);
+        this.toast.showSuccess(`Welcome, ${user.username}! Account created successfully.`);
       }),
       catchError((err) => {
         const message = err.error?.message || 'Registration failed';
@@ -85,6 +88,7 @@ export class AuthService {
         this.currentUserSignal.set(user);
         this.saveUserToStorage(user);
         this.loading.set(false);
+        this.toast.showSuccess(`Welcome back, ${user.username}!`);
       }),
       catchError((err) => {
         const message = err.error?.message || 'Invalid username/email or password';

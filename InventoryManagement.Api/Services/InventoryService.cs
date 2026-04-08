@@ -1,6 +1,5 @@
-using Microsoft.EntityFrameworkCore;
-using InventoryManagement.Api.Data;
 using InventoryManagement.Api.Models;
+using InventoryManagement.Api.Repositories;
 
 namespace InventoryManagement.Api.Services;
 
@@ -15,23 +14,21 @@ public interface IInventoryService
 
 public class InventoryService : IInventoryService
 {
-    private readonly InventoryDbContext _context;
+    private readonly IInventoryItemRepository _repository;
 
-    public InventoryService(InventoryDbContext context)
+    public InventoryService(IInventoryItemRepository repository)
     {
-        _context = context;
+        _repository = repository;
     }
 
     public async Task<IEnumerable<InventoryItem>> GetAllAsync()
     {
-        return await _context.InventoryItems
-            .OrderByDescending(x => x.CreatedAt)
-            .ToListAsync();
+        return await _repository.GetAllOrderedByDateAsync();
     }
 
     public async Task<InventoryItem?> GetByIdAsync(int id)
     {
-        return await _context.InventoryItems.FindAsync(id);
+        return await _repository.GetByIdAsync(id);
     }
 
     public async Task<InventoryItem> CreateAsync(InventoryItem item)
@@ -39,15 +36,12 @@ public class InventoryService : IInventoryService
         item.CreatedAt = DateTime.UtcNow;
         item.UpdatedAt = DateTime.UtcNow;
 
-        _context.InventoryItems.Add(item);
-        await _context.SaveChangesAsync();
-
-        return item;
+        return await _repository.AddAsync(item);
     }
 
     public async Task<InventoryItem?> UpdateAsync(int id, InventoryItem item)
     {
-        var existingItem = await _context.InventoryItems.FindAsync(id);
+        var existingItem = await _repository.GetByIdAsync(id);
         if (existingItem == null)
             return null;
 
@@ -58,20 +52,18 @@ public class InventoryService : IInventoryService
         existingItem.Price = item.Price;
         existingItem.UpdatedAt = DateTime.UtcNow;
 
-        await _context.SaveChangesAsync();
+        await _repository.UpdateAsync(existingItem);
 
         return existingItem;
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var item = await _context.InventoryItems.FindAsync(id);
+        var item = await _repository.GetByIdAsync(id);
         if (item == null)
             return false;
 
-        _context.InventoryItems.Remove(item);
-        await _context.SaveChangesAsync();
-
+        await _repository.DeleteAsync(item);
         return true;
     }
 }

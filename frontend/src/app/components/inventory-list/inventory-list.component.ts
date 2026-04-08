@@ -5,24 +5,28 @@ import { Router } from '@angular/router';
 import { InventoryService } from '../../services/inventory.service';
 import { InventoryItem } from '../../models/inventory-item.model';
 import { AuthService } from '../../services/auth.service';
+import { ToastComponent } from '../toast/toast.component';
 
 @Component({
   selector: 'app-inventory-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ToastComponent],
   templateUrl: './inventory-list.component.html',
   styleUrl: './inventory-list.component.css'
 })
 export class InventoryListComponent implements OnInit {
-  private inventoryService = inject(InventoryService);
-  private authService = inject(AuthService);
-  private fb = inject(FormBuilder);
-  private router = inject(Router);
+  private readonly inventoryService = inject(InventoryService);
+  private readonly authService = inject(AuthService);
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
 
   // DRY: Use service's computed signals directly instead of duplicating state
   items = this.inventoryService.items;
   loading = this.inventoryService.isLoading;
   error = this.inventoryService.errorMessage;
+  allCategories = this.inventoryService.allCategories;
+  searchTerm = this.inventoryService.currentSearchTerm;
+  selectedCategory = this.inventoryService.currentSelectedCategory;
 
   showForm = false;
   editingItem: InventoryItem | null = null;
@@ -96,8 +100,8 @@ export class InventoryListComponent implements OnInit {
     }
   }
 
-  deleteItem(id: number): void {
-    if (confirm('Are you sure you want to delete this item?')) {
+  deleteItem(id: number, itemName: string): void {
+    if (confirm(`Are you sure you want to delete "${itemName}"? This action cannot be undone.`)) {
       this.inventoryService.deleteInventoryItem(id).subscribe({
         error: (err) => console.error('Error deleting item:', err)
       });
@@ -118,5 +122,19 @@ export class InventoryListComponent implements OnInit {
 
   clearError(): void {
     this.inventoryService.clearError();
+  }
+
+  onSearchChange(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.inventoryService.setSearchTerm(value);
+  }
+
+  onCategoryChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.inventoryService.setSelectedCategory(value);
+  }
+
+  clearFilters(): void {
+    this.inventoryService.clearFilters();
   }
 }

@@ -1,33 +1,32 @@
 using System.Security.Cryptography;
+using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using InventoryManagement.Api.Data;
 using InventoryManagement.Api.Models;
+using InventoryManagement.Api.Repositories;
 
 namespace InventoryManagement.Api.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly InventoryDbContext _context;
+    private readonly IUserRepository _userRepository;
     private readonly IConfiguration _config;
     private readonly TimeSpan _tokenLifetime = TimeSpan.FromHours(24);
 
-    public AuthService(InventoryDbContext context, IConfiguration config)
+    public AuthService(IUserRepository userRepository, IConfiguration config)
     {
-        _context = context;
+        _userRepository = userRepository;
         _config = config;
     }
 
     public async Task<User?> RegisterAsync(RegisterUserDto dto)
     {
         // Check if username or email already exists
-        if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
+        if (await _userRepository.UsernameExistsAsync(dto.Username))
             throw new InvalidOperationException("Username already exists");
-        
-        if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+
+        if (await _userRepository.EmailExistsAsync(dto.Email))
             throw new InvalidOperationException("Email already exists");
 
         CreatePasswordHash(dto.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -42,16 +41,12 @@ public class AuthService : IAuthService
             UpdatedAt = DateTime.UtcNow
         };
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-
-        return user;
+        return await _userRepository.AddAsync(user);
     }
 
     public async Task<AuthResponseDto?> LoginAsync(LoginUserDto dto)
     {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Username == dto.UsernameOrEmail || u.Email == dto.UsernameOrEmail);
+        var user = await _userRepository.FindByUsernameOrEmailAsync(dto.UsernameOrEmail);
 
         if (user == null)
             return null;
@@ -71,7 +66,7 @@ public class AuthService : IAuthService
 
     public async Task<User?> GetUserByIdAsync(int id)
     {
-        return await _context.Users.FindAsync(id);
+        return await _userRepository.GetByIdAsync(id);
     }
 
     public bool ValidateToken(string token, out int userId)
@@ -81,7 +76,7 @@ public class AuthService : IAuthService
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong!");
-            
+
             tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
@@ -119,7 +114,7 @@ public class AuthService : IAuthService
     private string CreateToken(User user)
     {
         var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong!");
-        
+
         var claims = new List<Claim>
         {
             new Claim("UserId", user.Id.ToString()),
