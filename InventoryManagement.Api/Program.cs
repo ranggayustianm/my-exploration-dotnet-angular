@@ -39,7 +39,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Configure DbContext - support both PostgreSQL (production) and InMemory (testing)
-var useInMemory = builder.Configuration.GetValue<bool>("Testing:UseInMemoryDatabase");
+var useInMemory = builder.Configuration.GetValue<bool>("Testing:UseInMemoryDatabase") 
+                  || builder.Environment.EnvironmentName == "Test";
+Console.WriteLine($"[DEBUG] useInMemory = {useInMemory}, Environment = {builder.Environment.EnvironmentName}");
 
 if (useInMemory)
 {
@@ -61,7 +63,8 @@ builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Configure JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast64CharactersLong!";
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast64CharactersLongForHS512NKk00PecJEHvmBxA3wSAYPmfhPZ4x8";
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -95,12 +98,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Debug: Check if configuration is being read correctly
-var testMode = app.Configuration.GetValue<bool>("Testing:UseInMemoryDatabase");
-Console.WriteLine($"[DEBUG] Testing:UseInMemoryDatabase = {testMode}");
-
 // Initialize database and apply migrations (skip for in-memory database)
-if (!testMode)
+if (!useInMemory)
 {
     using (var scope = app.Services.CreateScope())
     {

@@ -2,11 +2,8 @@ using System.Net.Http.Json;
 using System.Net;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -24,7 +21,8 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Development");
+        // Set environment to "Test" so Program.cs uses InMemory database
+        builder.UseEnvironment("Test");
     }
 }
 
@@ -33,6 +31,9 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>
 /// </summary>
 public static class AuthHelper
 {
+    // Must match the default fallback in Program.cs (at least 65 chars = >512 bits for HS512)
+    private const string DefaultJwtKey = "YourSuperSecretKeyThatIsAtLeast64CharactersLongForHS512NKk00PecJEHvmBxA3wSAYPmfhPZ4x8";
+
     public static string GenerateTestToken()
     {
         var claims = new[]
@@ -42,9 +43,7 @@ public static class AuthHelper
             new Claim(ClaimTypes.Email, "test_admin@example.com")
         };
 
-        Console.WriteLine(TestSecretManager.GetJwtKey());
-
-        var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("LtpWXzd9hWbgpegg7KHEc5RwcyUBrExQ3yzH1dYvZ6LR6WdNA281Ab8yfVTK60k4Tku5TxW4I0OqexEyEhvd6u"));
+        var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(DefaultJwtKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
 
         var token = new JwtSecurityToken(

@@ -1,5 +1,4 @@
 using InventoryManagement.Api.Models;
-using InventoryManagement.Api.Repositories;
 
 namespace InventoryManagement.Api.Repositories;
 

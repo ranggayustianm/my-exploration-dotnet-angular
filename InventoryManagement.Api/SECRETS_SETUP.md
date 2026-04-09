@@ -39,35 +39,6 @@ This project supports two methods for managing sensitive configuration data like
 
 User Secrets are automatically loaded in Development environment and will override values in `appsettings.json`.
 
-### Setup User Secrets for Tests:
-
-The test project (`InventoryManagement.Api.Tests`) also uses User Secrets to access the same JWT key for generating test tokens. This ensures consistency between the API and test token generation.
-
-1. **Initialize User Secrets for tests** (already configured in `.csproj`):
-   ```bash
-   cd InventoryManagement.Api.Tests
-   dotnet user-secrets init
-   ```
-
-2. **Set the JWT Key** (must match the API's JWT key):
-   ```bash
-   dotnet user-secrets set "Jwt:Key" "your-super-secret-jwt-key-at-least-64-characters"
-   ```
-
-   **Important**: Use the **same JWT key** as the API project to ensure test tokens are valid.
-
-3. **Verify the secret is set**:
-   ```bash
-   dotnet user-secrets list
-   ```
-
-   You should see:
-   ```
-   Jwt:Key = your-super-secret-jwt-key-at-least-64-characters
-   ```
-
-User Secrets are automatically loaded in the test project and used by `TestSecretManager.GetJwtKey()` to configure both the test server and generate authentication tokens.
-
 ## Option 2: Using secrets.json File
 
 A `secrets.json` template file is provided for reference. **DO NOT commit this file with real secrets!**
