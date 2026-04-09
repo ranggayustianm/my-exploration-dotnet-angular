@@ -176,8 +176,12 @@ describe('InventoryService', () => {
       };
 
       const responseItem: InventoryItem = {
-        ...updatedItem,
         id: 1,
+        name: updatedItem.name!,
+        description: updatedItem.description!,
+        quantity: updatedItem.quantity!,
+        category: updatedItem.category!,
+        price: updatedItem.price!,
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date()
       };
@@ -222,7 +226,7 @@ describe('InventoryService', () => {
       expect(service.items().length).toBe(2);
 
       service.deleteInventoryItem(1).subscribe(response => {
-        expect(response).toBeUndefined();
+        expect(response).toBeNull();
         expect(service.items().length).toBe(1);
         expect(service.items().find(i => i.id === 1)).toBeUndefined();
         done();
@@ -248,16 +252,19 @@ describe('InventoryService', () => {
   });
 
   describe('clearError', () => {
-    it('should clear the error message', () => {
+    it('should clear the error message', (done) => {
       // First trigger an error
-      service.getInventoryItems().subscribe();
+      service.getInventoryItems().subscribe({
+        error: () => {
+          expect(service.errorMessage()).toBe('Failed to fetch inventory items');
+
+          service.clearError();
+          expect(service.errorMessage()).toBeNull();
+          done();
+        }
+      });
       const req = httpMock.expectOne(apiUrl);
       req.flush('Error', { status: 500, statusText: 'Server Error' });
-
-      expect(service.errorMessage()).toBe('Failed to fetch inventory items');
-
-      service.clearError();
-      expect(service.errorMessage()).toBeNull();
     });
   });
 

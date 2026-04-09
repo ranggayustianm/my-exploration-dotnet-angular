@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { InventoryListComponent } from './inventory-list.component';
 import { InventoryService } from '../../services/inventory.service';
 import { InventoryItem } from '../../models/inventory-item.model';
@@ -11,6 +11,7 @@ describe('InventoryListComponent', () => {
   let component: InventoryListComponent;
   let fixture: ComponentFixture<InventoryListComponent>;
   let inventoryService: InventoryService;
+  let httpMock: HttpTestingController;
 
   const mockInventoryItems: InventoryItem[] = [
     {
@@ -46,9 +47,20 @@ describe('InventoryListComponent', () => {
       ]
     }).compileComponents();
 
+    httpMock = TestBed.inject(HttpTestingController);
+    inventoryService = TestBed.inject(InventoryService);
+
     fixture = TestBed.createComponent(InventoryListComponent);
     component = fixture.componentInstance;
-    inventoryService = TestBed.inject(InventoryService);
+    // Flush the initial loadInventoryItems call from ngOnInit if it happens
+    const reqs = httpMock.match(() => true);
+    reqs.forEach(req => req.flush([]));
+  });
+
+  afterEach(() => {
+    // Flush any remaining pending requests to prevent test pollution
+    const reqs = httpMock.match(() => true);
+    reqs.forEach(req => req.flush([]));
   });
 
   it('should create', () => {
@@ -147,20 +159,23 @@ describe('InventoryListComponent', () => {
   describe('saveItem', () => {
     it('should not save when form is invalid', () => {
       component.itemForm = TestBed.inject(FormBuilder).group({
-        name: [''],
+        name: ['', [Validators.required]],
         description: [''],
         category: [''],
-        quantity: [0],
-        price: [0]
+        quantity: [0, [Validators.required, Validators.min(0)]],
+        price: [0, [Validators.required, Validators.min(0)]]
       });
+      component.itemForm.updateValueAndValidity();
       component.editingItem = null;
 
-      const createSpy = spyOn(inventoryService, 'createInventoryItem');
-      
+      const createSpy = spyOn(inventoryService, 'createInventoryItem').and.returnValue(throwError(() => new Error('should not reach')));
+      const updateSpy = spyOn(inventoryService, 'updateInventoryItem').and.returnValue(throwError(() => new Error('should not reach')));
+
       component.saveItem();
 
       expect(component.itemForm.invalid).toBeTrue();
       expect(createSpy).not.toHaveBeenCalled();
+      expect(updateSpy).not.toHaveBeenCalled();
     });
 
     it('should create new item when not editing', () => {
@@ -212,7 +227,13 @@ describe('InventoryListComponent', () => {
 
       component.saveItem();
 
-      expect(inventoryService.updateInventoryItem).toHaveBeenCalledWith(1, jasmine.objectContaining(updatedItem));
+      expect(inventoryService.updateInventoryItem).toHaveBeenCalledWith(1, jasmine.objectContaining({
+        name: updatedItem.name,
+        description: updatedItem.description,
+        category: updatedItem.category,
+        quantity: updatedItem.quantity,
+        price: updatedItem.price
+      }));
       expect(component.closeForm).toHaveBeenCalled();
     });
 
@@ -259,9 +280,9 @@ describe('InventoryListComponent', () => {
 
       spyOn(inventoryService, 'deleteInventoryItem').and.returnValue(of(undefined));
 
-      component.deleteItem(1);
+      component.deleteItem(1, 'Test Item 1');
 
-      expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this item?');
+      expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete "Test Item 1"? This action cannot be undone.');
       expect(inventoryService.deleteInventoryItem).toHaveBeenCalledWith(1);
     });
 
@@ -270,7 +291,7 @@ describe('InventoryListComponent', () => {
 
       const deleteSpy = spyOn(inventoryService, 'deleteInventoryItem');
 
-      component.deleteItem(1);
+      component.deleteItem(1, 'Test Item 1');
 
       expect(window.confirm).toHaveBeenCalled();
       expect(deleteSpy).not.toHaveBeenCalled();
@@ -281,7 +302,7 @@ describe('InventoryListComponent', () => {
       spyOn(window, 'confirm').and.returnValue(true);
       spyOn(inventoryService, 'deleteInventoryItem').and.returnValue(throwError(() => new Error('Failed')));
 
-      component.deleteItem(1);
+      component.deleteItem(1, 'Test Item 1');
 
       expect(consoleSpy).toHaveBeenCalledWith('Error deleting item:', jasmine.anything());
     });

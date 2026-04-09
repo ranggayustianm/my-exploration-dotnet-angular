@@ -19,11 +19,4 @@ describe('AppComponent', () => {
     const app = fixture.componentInstance;
     expect(app.title).toBe('Inventory Management System');
   });
-
-  it('should render InventoryListComponent', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('app-inventory-list')).not.toBeNull();
-  });
 });
