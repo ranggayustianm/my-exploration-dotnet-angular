@@ -53,8 +53,8 @@ public class InventoryDbContext : DbContext
                 Quantity = 5,
                 Category = "Electronics",
                 Price = 999.99m,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             },
             new InventoryItem
             {
@@ -64,8 +64,8 @@ public class InventoryDbContext : DbContext
                 Quantity = 10,
                 Category = "Furniture",
                 Price = 249.99m,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             },
             new InventoryItem
             {
@@ -75,8 +75,8 @@ public class InventoryDbContext : DbContext
                 Quantity = 7,
                 Category = "Electronics",
                 Price = 199.99m,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             },
             new InventoryItem
             {
@@ -86,8 +86,8 @@ public class InventoryDbContext : DbContext
                 Quantity = 100,
                 Category = "Office Supplies",
                 Price = 4.99m,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             },
             new InventoryItem
             {
@@ -97,8 +97,8 @@ public class InventoryDbContext : DbContext
                 Quantity = 200,
                 Category = "Office Supplies",
                 Price = 2.99m,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             }
         );
     }

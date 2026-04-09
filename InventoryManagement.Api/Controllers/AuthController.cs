@@ -12,10 +12,12 @@ namespace InventoryManagement.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, ILogger<AuthController> logger)
     {
         _authService = authService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -41,9 +43,10 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(500, new { message = "An error occurred during registration" });
+            _logger.LogError(ex, "Registration failed for user {Username}", dto.Username);
+            return StatusCode(500, new { message = "An error occurred during registration", details = ex.Message });
         }
     }
 

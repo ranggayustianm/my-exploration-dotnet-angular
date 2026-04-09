@@ -1,3 +1,7 @@
+# Secrets
+secrets.json
+**/secrets.json
+
 # Compiled and build artifacts
 *.o
 *.obj
