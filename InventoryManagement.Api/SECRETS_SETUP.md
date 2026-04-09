@@ -1,4 +1,4 @@
-# Managing Secrets in InventoryManagement.Api
+# Managing Secrets in InventoryManagement
 
 This project supports two methods for managing sensitive configuration data like JWT keys and database passwords:
 
@@ -6,7 +6,7 @@ This project supports two methods for managing sensitive configuration data like
 
 .NET User Secrets stores sensitive data outside your project tree in a location managed by .NET.
 
-### Setup User Secrets:
+### Setup User Secrets for API:
 
 1. **Initialize User Secrets** (already configured in `.csproj`):
    ```bash
@@ -18,7 +18,7 @@ This project supports two methods for managing sensitive configuration data like
    ```bash
    # Set JWT Key
    dotnet user-secrets set "Jwt:Key" "your-super-secret-jwt-key-at-least-64-characters"
-   
+
    # Set Database Connection String
    dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=inventorydb;Username=postgres;Password=your-secure-password"
    ```
@@ -32,12 +32,41 @@ This project supports two methods for managing sensitive configuration data like
    ```bash
    # Remove a specific secret
    dotnet user-secrets remove "Jwt:Key"
-   
+
    # Remove all secrets
    dotnet user-secrets clear
    ```
 
 User Secrets are automatically loaded in Development environment and will override values in `appsettings.json`.
+
+### Setup User Secrets for Tests:
+
+The test project (`InventoryManagement.Api.Tests`) also uses User Secrets to access the same JWT key for generating test tokens. This ensures consistency between the API and test token generation.
+
+1. **Initialize User Secrets for tests** (already configured in `.csproj`):
+   ```bash
+   cd InventoryManagement.Api.Tests
+   dotnet user-secrets init
+   ```
+
+2. **Set the JWT Key** (must match the API's JWT key):
+   ```bash
+   dotnet user-secrets set "Jwt:Key" "your-super-secret-jwt-key-at-least-64-characters"
+   ```
+
+   **Important**: Use the **same JWT key** as the API project to ensure test tokens are valid.
+
+3. **Verify the secret is set**:
+   ```bash
+   dotnet user-secrets list
+   ```
+
+   You should see:
+   ```
+   Jwt:Key = your-super-secret-jwt-key-at-least-64-characters
+   ```
+
+User Secrets are automatically loaded in the test project and used by `TestSecretManager.GetJwtKey()` to configure both the test server and generate authentication tokens.
 
 ## Option 2: Using secrets.json File
 
@@ -73,6 +102,7 @@ docker run -e "ConnectionStrings__DefaultConnection=Host=..." -e "Jwt__Key=your-
 - ✅ Never commit real secrets to version control
 - ✅ Rotate secrets regularly
 - ✅ Use strong, randomly generated keys (JWT key should be at least 64 characters)
+- ✅ Keep the same JWT key in sync between API and test projects
 
 ## Current Configuration
 

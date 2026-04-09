@@ -38,9 +38,19 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(xmlPath);
 });
 
-// Configure PostgreSQL DbContext
-builder.Services.AddDbContext<InventoryDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Configure DbContext - support both PostgreSQL (production) and InMemory (testing)
+var useInMemory = builder.Configuration.GetValue<bool>("Testing:UseInMemoryDatabase");
+
+if (useInMemory)
+{
+    builder.Services.AddDbContext<InventoryDbContext>(options =>
+        options.UseInMemoryDatabase("IntegrationTestDb"));
+}
+else
+{
+    builder.Services.AddDbContext<InventoryDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
 
 // Register Repositories
 builder.Services.AddScoped<IInventoryItemRepository, InventoryItemRepository>();
@@ -51,7 +61,7 @@ builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Configure JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong!";
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast64CharactersLong!";
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -85,11 +95,26 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Initialize database and apply migrations
-using (var scope = app.Services.CreateScope())
+// Debug: Check if configuration is being read correctly
+var testMode = app.Configuration.GetValue<bool>("Testing:UseInMemoryDatabase");
+Console.WriteLine($"[DEBUG] Testing:UseInMemoryDatabase = {testMode}");
+
+// Initialize database and apply migrations (skip for in-memory database)
+if (!testMode)
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
-    dbContext.Database.Migrate();
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
+        dbContext.Database.Migrate();
+    }
+}
+else
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
+        dbContext.Database.EnsureCreated();
+    }
 }
 
 // Configure the HTTP request pipeline.
