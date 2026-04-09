@@ -11,6 +11,7 @@ namespace InventoryManagement.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 [Authorize]
 public class InventoryController : ControllerBase
 {

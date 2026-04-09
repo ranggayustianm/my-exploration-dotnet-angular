@@ -1,0 +1,51 @@
+<header class="bg-white shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <!-- Logo and Title -->
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+          </svg>
+        </div>
+        <h1 class="ml-3 text-xl font-semibold text-gray-900">Inventory Management</h1>
+      </div>
+
+      <!-- User Menu -->
+      <div class="relative">
+        <button
+          (click)="toggleUserMenu()"
+          class="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none"
+        >
+          <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+            {{ currentUser()?.username?.charAt(0)?.toUpperCase() || 'U' }}
+          </div>
+          <span class="hidden sm:block">{{ currentUser()?.username || 'User' }}</span>
+          <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div
+          *ngIf="showUserMenu"
+          class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 ring-1 ring-black ring-opacity-5"
+        >
+          <div class="px-4 py-2 border-b border-gray-200">
+            <p class="text-sm font-medium text-gray-900">{{ currentUser()?.username }}</p>
+            <p class="text-xs text-gray-500 truncate">{{ currentUser()?.email }}</p>
+          </div>
+          <button
+            (click)="logout()"
+            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
+          >
+            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

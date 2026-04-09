@@ -9,6 +9,7 @@ namespace InventoryManagement.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;

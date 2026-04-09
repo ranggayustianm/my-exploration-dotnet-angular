@@ -23,11 +23,8 @@ public class AuthService : IAuthService
     public async Task<User?> RegisterAsync(RegisterUserDto dto)
     {
         // Check if username or email already exists
-        if (await _userRepository.UsernameExistsAsync(dto.Username))
-            throw new InvalidOperationException("Username already exists");
-
-        if (await _userRepository.EmailExistsAsync(dto.Email))
-            throw new InvalidOperationException("Email already exists");
+        if (await _userRepository.UsernameExistsAsync(dto.Username) || await _userRepository.EmailExistsAsync(dto.Email))
+            throw new InvalidOperationException("Username or email already exists");
 
         CreatePasswordHash(dto.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
@@ -75,7 +72,7 @@ public class AuthService : IAuthService
         try
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong!");
+            var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast64CharactersLong!");
 
             tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
@@ -113,7 +110,7 @@ public class AuthService : IAuthService
 
     private string CreateToken(User user)
     {
-        var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong!");
+        var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast64CharactersLong!");
 
         var claims = new List<Claim>
         {

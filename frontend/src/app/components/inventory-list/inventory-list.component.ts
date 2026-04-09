@@ -1,24 +1,19 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
 import { InventoryService } from '../../services/inventory.service';
 import { InventoryItem } from '../../models/inventory-item.model';
-import { AuthService } from '../../services/auth.service';
-import { ToastComponent } from '../toast/toast.component';
 
 @Component({
   selector: 'app-inventory-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ToastComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './inventory-list.component.html',
   styleUrl: './inventory-list.component.css'
 })
 export class InventoryListComponent implements OnInit {
   private readonly inventoryService = inject(InventoryService);
-  private readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
-  private readonly router = inject(Router);
 
   // DRY: Use service's computed signals directly instead of duplicating state
   items = this.inventoryService.items;
@@ -113,11 +108,6 @@ export class InventoryListComponent implements OnInit {
       style: 'currency',
       currency: 'USD'
     }).format(price);
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
   }
 
   clearError(): void {

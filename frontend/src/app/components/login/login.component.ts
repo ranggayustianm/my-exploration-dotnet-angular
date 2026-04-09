@@ -24,7 +24,7 @@ export class LoginComponent implements OnInit {
 
   loading = this.authService.isLoading;
   error = this.authService.errorMessage;
-  returnUrl = '/inventory';
+  returnUrl = '/dashboard';
 
   ngOnInit(): void {
     this.initForms();

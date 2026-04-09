@@ -29,9 +29,12 @@ export const authInterceptor: HttpInterceptorFn = (
     catchError((error: HttpErrorResponse) => {
       let errorMsg = 'An unexpected error occurred';
 
-      if (error.status === 401) {
+      if (error.status === 401 && !isAuthRequest(req)) {
         errorMsg = 'Session expired. Please login again.';
         authService.logout();
+      } else if (error.status === 401) {
+        // Let AuthService handle 401 from login/register requests
+        return throwError(() => error);
       } else if (error.status === 403) {
         errorMsg = 'You do not have permission to access this resource.';
       } else if (error.status === 500) {
@@ -45,3 +48,8 @@ export const authInterceptor: HttpInterceptorFn = (
     })
   );
 };
+
+function isAuthRequest(req: HttpRequest<unknown>): boolean {
+  const url = req.url.toLowerCase();
+  return url.includes('/api/auth/login') || url.includes('/api/auth/register');
+}

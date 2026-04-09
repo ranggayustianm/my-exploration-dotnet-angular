@@ -1,21 +1,16 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { InventoryService } from '../../services/inventory.service';
-import { AuthService } from '../../services/auth.service';
-import { ToastComponent } from '../toast/toast.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, ToastComponent],
+  imports: [CommonModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
   private inventoryService = inject(InventoryService);
-  private authService = inject(AuthService);
-  private router = inject(Router);
 
   // Stats from service
   totalItems = this.inventoryService.totalItems;
@@ -44,14 +39,5 @@ export class DashboardComponent implements OnInit {
       day: 'numeric',
       year: 'numeric'
     });
-  }
-
-  navigateToInventory(): void {
-    this.router.navigate(['/inventory']);
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
   }
 }
