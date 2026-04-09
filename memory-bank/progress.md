@@ -6,7 +6,7 @@
 
 **Last Verified:** Thursday, 9 April 2026
 
-**Overall Status:** Both frontend and backend builds verified. Frontend builds cleanly (436.43 kB initial bundle). Backend process is running (PID 20540), confirming successful prior compilation. Architecture is complete with all documented components present on disk.
+**Overall Status:** Both frontend and backend builds verified. Frontend builds cleanly (436.43 kB initial bundle). Backend compiles and runs successfully with EF Core migrations auto-applied on startup. Architecture is complete with all documented components present on disk. README.md created at repository root.
 
 ## What Works
 
@@ -136,13 +136,14 @@
 ```
 InventoryManagement.Api/
 ├── Controllers/
-│   ├── InventoryController.cs    # CRUD endpoints with XML docs
-│   └── AuthController.cs         # Login/Register endpoints with XML docs
+│   ├── InventoryController.cs    # CRUD endpoints (protected)
+│   └── AuthController.cs         # Login/Register endpoints
 ├── Models/
 │   ├── InventoryItem.cs          # Entity with timestamps
 │   └── User.cs                   # User entity with password hash/salt
 ├── Data/
-│   └── InventoryDbContext.cs     # EF Core context with seeding
+│   └── InventoryDbContext.cs     # EF Core context with seeding & migrations
+├── Migrations/                   # EF Core database migrations
 ├── Repositories/
 │   ├── IRepository.cs            # Generic repository interface
 │   ├── Repository.cs             # Generic repository base
@@ -157,16 +158,17 @@ InventoryManagement.Api/
 │   └── AuthService.cs            # Auth logic with JWT
 ├── Middleware/
 │   └── GlobalExceptionHandler.cs # Centralized error handling
-└── Program.cs                    # DI setup, middleware pipeline
+├── Program.cs                    # DI setup, middleware pipeline, Swagger, JWT, CORS
+└── appsettings.json              # Configuration (ConnectionStrings, Jwt, Logging)
 ```
 
 ### Frontend Structure
 ```
 frontend/src/app/
 ├── components/
-│   ├── inventory-list/           # Main CRUD component
+│   ├── inventory-list/           # Main CRUD component with search/filter
 │   ├── login/                    # Authentication UI
-│   ├── dashboard/                # Stats dashboard
+│   ├── dashboard/                # Stats dashboard with analytics
 │   └── toast/                    # Toast notification UI
 ├── services/
 │   ├── inventory.service.ts      # Inventory API service with signals
@@ -174,9 +176,24 @@ frontend/src/app/
 ├── guards/
 │   └── auth.guard.ts             # Route protection
 ├── interceptors/
-│   └── auth.interceptor.ts       # JWT auto-attachment
+│   └── auth.interceptor.ts       # JWT auto-attachment to HTTP requests
+├── models/                       # TypeScript interfaces (InventoryItem, etc.)
 └── app.routes.ts                 # Route configuration with guards
 ```
+
+### Key Dependencies
+**Backend:**
+- .NET 9.0 (ASP.NET Core Web API)
+- Entity Framework Core 9.0 + Npgsql (PostgreSQL)
+- Swashbuckle.AspNetCore (Swagger/OpenAPI)
+- Microsoft.AspNetCore.Authentication.JwtBearer
+- System.IdentityModel.Tokens.Jwt
+
+**Frontend:**
+- Angular 19.2
+- Tailwind CSS 4.2
+- RxJS 7.8
+- Zone.js 0.15
 
 ## Evolution of Project Decisions
 
@@ -219,6 +236,7 @@ frontend/src/app/
 
 ### Thursday (Today)
 - [x] End-to-end testing (build verification complete)
+- [x] Update project documentation (README.md, Architecture Summary)
 - [ ] Fix any integration bugs
 - [ ] Write basic tests
 - [ ] Prepare demo script
